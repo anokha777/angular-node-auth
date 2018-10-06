@@ -5,7 +5,7 @@ const Post = require('./models/post');
 
 const app = express();
 
-mongoose.connect("mongodb+srv://anokhaMongoDBuserID:wZBw88V7Yx9uXgRX@cluster0-mijcm.mongodb.net/test?retryWrites=true")
+mongoose.connect("mongodb+srv://anokhaMongoDBuserID:wZBw88V7Yx9uXgRX@cluster0-mijcm.mongodb.net/angular-node-auth?retryWrites=true", { useNewUrlParser: true })
 .then(() => {
   console.log('Database Connection success');
 }).catch((err) => {
@@ -28,22 +28,30 @@ app.post('/api/posts', (req, res, next) => {
     title: req.body.title,
     content: req.body.content
   });
-  console.log(post);
-  res.status(201).json({
-    message: 'Post added successfully'
+  post.save().then((createdPost) => {
+    console.log(post);
+    res.status(201).json({
+      message: 'Post added successfully',
+      postId: createdPost._id
+    });
   });
+
 });
 
 app.get('/api/posts', (req, res, next) => {
-  const posts = [
-      {id:'cgvhnmuiyuiouyudfu', title: 'First Post', content: 'this is the first post content'},
-      {id:'rty89inhj89jioj89j', title: 'second Post', content: 'this is the second post content'},
-      {id:'567878b785678uiklm', title: 'third Post', content: 'this is the third post content'},
-    ];
+  Post.find().then((documents) => {
+    res.status(200).json({
+      message: 'post fetched successfully',
+      posts: documents
+    });
+  });
+});
 
-  res.status(200).json({
-    message: 'post fetched successfully',
-    posts: posts
+app.delete('/api/posts/:id', (req, res, next) => {
+  Post.deleteOne({_id: req.params.id}).then(() => {
+    res.status(200).json({
+      message: 'Post deleted!'
+    });
   });
 });
 
